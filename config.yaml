@@ -1,0 +1,18 @@
+options:
+  openstack-base-dn:
+    type: string
+    default: "dc=openstack,dc=org"
+    description: "Base DN (root) for the OpenStack objects tree"
+  org-dn:
+    type: string
+    default: "dc=mycompany,dc=org"
+    description: "Base DN (root) for the MyCompany objects tree"
+  secure:
+    type: boolean
+    default: False
+    description: "Enable LDAPS"
+  port:
+    type: int
+    default: 389
+    description: "LDAP server port"
+

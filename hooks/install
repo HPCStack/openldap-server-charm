@@ -1,0 +1,86 @@
+#!/bin/bash
+# Here do anything needed to install the service
+# i.e. apt-get install -y foo  or  bzr branch http://myserver/mycode /srv/webroot
+#
+# This hook was copied from lp:~ahasenack/charms/precise/openldap/experimental/
+# Also, usefull info was found on the following blog:
+#     http://openstack.prov12n.com/quiet-or-unattended-installing-openldap-on-ubuntu-14-04/
+
+set -eux
+
+DOMAIN=openstack.org
+TREE="dc=openstack,dc=org"
+ORG=openstack
+
+apt_get() {
+    DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confold' $*
+}
+
+apt_get install openssl
+PASSFILE=/var/lib/juju/slapd.passwd
+if [ ! -f "$PASSFILE" ]; then
+    juju-log "Generating random password for LDAP admin"
+    # avoid race, making sure file is 0600 before we put the
+    # password in it
+    touch "$PASSFILE"
+    chmod 0600 "$PASSFILE"
+    /usr/bin/openssl passwd 8 > "$PASSFILE"
+else
+    chmod 0600 "$PASSFILE"
+fi
+PASSWORD=`cat "$PASSFILE"`
+if [ -z "$PASSWORD" ]; then
+    juju-log "Error, don't have a password for the LDAP admin."
+    exit 1
+fi
+
+juju-log "Pre-seeding the slapd package"
+# Hint:
+#	debconf-get-selections  |grep slapd
+echo "slapd slapd/internal/adminpw  password $PASSWORD" | debconf-set-selections
+echo "slapd slapd/password2 password $PASSWORD" | debconf-set-selections
+echo "slapd slapd/internal/adminpw password $PASSWORD" | debconf-set-selections
+echo "slapd slapd/password1 password $PASSWORD" | debconf-set-selections
+echo "slapd shared/organization string $ORG" | debconf-set-selections
+echo "slapd slapd/domain string $DOMAIN" | debconf-set-selections
+echo "slapd slapd/backend select HDB" | debconf-set-selections
+
+juju-log "Installing slapd via apt"
+apt_get install slapd ldap-utils
+
+# https://wiki.openstack.org/wiki/OpenLDAP
+#  Create Keystone LDAP schema:
+cat <<EOF >/var/lib/juju/openstack_schema.ldif
+# dn: $TREE
+# dc: $ORG
+# objectClass: dcObject
+# objectClass: organizationalUnit
+# ou: $ORG
+
+dn: ou=Groups,$TREE
+objectClass: top
+objectClass: organizationalUnit
+ou: groups
+
+dn: ou=Users,$TREE
+objectClass: top
+objectClass: organizationalUnit
+ou: users
+
+dn: ou=Roles,$TREE
+objectClass: top
+objectClass: organizationalUnit
+ou: roles
+EOF
+
+#juju-log "Change admin password (hack)"
+#SSHAPWD=`slappasswd -h {SSHA} -s "$PASSWORD"`
+
+
+juju-log "Add openstack/keystone LDAP schema"
+ldapadd -x -w "$PASSWORD" -D"cn=admin,$TREE" -f /var/lib/juju/openstack_schema.ldif
+
+open-port 389
+# how to test:
+#   ldapsearch -x -W -D"cn=admin,dc=openstack,dc=org" -b dc=openstack,dc=org
+#

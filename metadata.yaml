@@ -1,0 +1,14 @@
+name: openldap-server
+summary: OpenLDAP server (slapd) as backend of OpenStack's Keystone
+maintainer: Yuriy Shestakov <yshestakov@gmail.com>
+description: |
+  This is the OpenLDAP (Lightweight Directory Access Protocol) server
+  (slapd). The server can be used as OpenStack's Keystone backend.
+tags:
+  # Replace "misc" with one or more whitelisted tags from this list:
+  # https://jujucharms.com/docs/stable/authors-charm-metadata
+  - misc
+subordinate: false
+provides:
+  db:
+    interface: ldap
