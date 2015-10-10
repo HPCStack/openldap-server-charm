@@ -8,7 +8,16 @@ tags:
   # Replace "misc" with one or more whitelisted tags from this list:
   # https://jujucharms.com/docs/stable/authors-charm-metadata
   - misc
+  - openstack
+categories:
+  - databases
 subordinate: false
 provides:
-  db:
+  ldapdb:
     interface: ldap
+#        name: ldap
+#        variables_set:
+#            - bind_dn
+#            - bind_pw
+#            - base_dn
+#            - server_addr

@@ -78,9 +78,30 @@ EOF
 
 
 juju-log "Add openstack/keystone LDAP schema"
-ldapadd -x -w "$PASSWORD" -D"cn=admin,$TREE" -f /var/lib/juju/openstack_schema.ldif
 
-open-port 389
+ADMIN_DN="cn=admin,$TREE"
+ldapadd -x -w "$PASSWORD" -D "$ADMIN_DN" -f /var/lib/juju/openstack_schema.ldif
+
 # how to test:
 #   ldapsearch -x -W -D"cn=admin,dc=openstack,dc=org" -b dc=openstack,dc=org
 #
+
+open-port 389
+# ldaps           636/tcp
+open-port 636
+
+#$ status-get --include-data >/var/lib/juju/status-get.yaml
+#-----------------------------------
+#message: installing charm software
+#status: maintenance
+#status-data: {}
+#-----------------------------------
+umask 077
+# store settings into /var/lib/juju/openldap_setup.yaml
+RES=/var/lib/juju/openldap_setup.yaml
+cat <<EOF >/var/lib/juju/openldap_setup.yaml
+bind_dn: $ADMIN_DN
+bind_pw: $PASSWORD
+base_dn: $TREE
+EOF
+tatus-set waiting "Waiting for LDAP clients"

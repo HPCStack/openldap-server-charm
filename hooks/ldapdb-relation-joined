@@ -1,0 +1,22 @@
+#!/bin/bash
+# https://jujucharms.com/docs/devel/interface-mysql
+# ldapdb-relation-joined example
+if [ -z "$JUJU_RELATION_ID" ]; then
+    juju-log "There is no \$JUJU_RELATION_ID defined. Exit"
+    exit 1
+fi
+set -ex # -x for verbose logging to juju debug-log
+UNIT_ADDR=$(unit-get public-address)
+juju-log "Establishing LDAP connection from $UNIT_ADDR to $JUJU_REMOTE_UNIT"
+status-set maintenance "Establishing ldapdb-relation to $JUJU_RELATION_ID"
+relation-set server_addr=$UNIT_ADDR
+
+CFG=/var/lib/juju/openldap_setup.yaml
+IFS=": "
+while read key val
+do
+  relation-set $key=$val
+  juju-log "ldapdb-relation-joined set $key=$val"
+done < $CFG
+juju-log "ldapdb-relation-joined completed"
+status-set active

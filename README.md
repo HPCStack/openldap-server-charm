@@ -13,6 +13,8 @@ Instructions to setup OpenLDAP server for OpenStack was taken from
 Step by step instructions on using the charm:
 
     juju deploy openldap-server
+    juju deploy keystone
+    juju add-relation openldap-server keystone
 
 
 You can then use
