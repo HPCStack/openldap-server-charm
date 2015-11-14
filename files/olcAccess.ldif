@@ -1,0 +1,9 @@
+# https://wiki.debian.org/LDAP/OpenLDAPSetup
+# ldapmodify -Y EXTERNAL -H ldapi:/// -f ./olcAccess.ldif
+dn: olcDatabase={1}hdb,cn=config
+changetype: modify
+add: olcAccess
+olcAccess: {1}to attrs=loginShell,gecos
+  by dn="cn=admin,dc=openstack,dc=org" write
+  by self write
+  by * read

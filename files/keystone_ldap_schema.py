@@ -8,16 +8,16 @@ if sys.argv.__len__() < 3:
     usage = """
 USAGE: {0} subtree organization
 
-{0} Generates an LDIF file that can then be added to a Directory server via 
-the ldapadd command.  The Schema is in the format expected by the LDAP 
+{0} Generates an LDIF file that can then be added to a Directory server via
+the ldapadd command.  The Schema is in the format expected by the LDAP
 Identity Driver in Keystone
 """
     print usage.format(sys.argv[0])
     sys.exit(1)
 
-subtree=sys.argv[1]
-organization=sys.argv[2]
-ldif_file="""
+subtree = sys.argv[1]
+organization = sys.argv[2]
+ldif_file = """
 dn: {0}
 dc: {1}
 objectClass: dcObject
@@ -38,7 +38,11 @@ dn: ou=Roles,{0}
 objectClass: top
 objectClass: organizationalUnit
 ou: roles
+
+dn: ou=Projects,{0}
+objectClass: organizationalUnit
+ou: Projects
+
 """
 
-print ldif_file.format(subtree,organization)
-
+print ldif_file.format(subtree, organization)

@@ -71,6 +71,10 @@ dn: ou=Roles,$TREE
 objectClass: top
 objectClass: organizationalUnit
 ou: roles
+
+dn: ou=Projects,$TREE
+objectClass: organizationalUnit
+ou: Projects
 EOF
 
 #juju-log "Change admin password (hack)"
@@ -104,4 +108,4 @@ bind_dn: $ADMIN_DN
 bind_pw: $PASSWORD
 base_dn: $TREE
 EOF
-tatus-set waiting "Waiting for LDAP clients"
+status-set waiting "Waiting for LDAP clients"
